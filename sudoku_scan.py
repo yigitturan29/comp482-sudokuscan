@@ -33,15 +33,15 @@ def main():
     except (ValueError, OSError, TypeError) as error:
         parser.error(str(error))
     cv2.setNumThreads(1)
-    succeeded = 0
+    completed = 0
     for path in paths:
         result = scan_image(path, args.outdir, config, args.tesseract_cmd)
-        succeeded += int(result["processing_ok"])
+        completed += int(result["processing_ok"] or result.get("error_code") == "puzzle_not_found")
         print(f"{path.name}: {result['verdict']} ({result['runtime_s']:.3f}s) "
               f"{result.get('error', '')}")
-    # Reports for failures are written, and all images are attempted. Nonzero
-    # exit status makes an unfinished implementation visible to scripts/users.
-    return 0 if succeeded == len(paths) else 1
+    # A controlled no-puzzle result is a completed attempt, not a process crash.
+    # Installation/decode/internal errors still produce JSON and a nonzero code.
+    return 0 if completed == len(paths) else 1
 
 
 if __name__ == "__main__":
