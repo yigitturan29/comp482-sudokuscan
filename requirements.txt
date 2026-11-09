@@ -1,0 +1,6 @@
+numpy>=1.26,<3
+opencv-python>=4.10,<5
+Pillow>=10.4,<13
+pytesseract>=0.3.13,<0.4
+matplotlib>=3.9,<4
+# External engine: Tesseract OCR 5.x with eng.traineddata; see README.md.

@@ -1,0 +1,2 @@
+reportlab>=4.2,<5
+# For the optional Turkish guide only. The IEEE report uses a LaTeX distribution.
