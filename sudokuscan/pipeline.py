@@ -1,4 +1,5 @@
 from pathlib import Path
+from dataclasses import replace
 import time
 
 import cv2
@@ -48,23 +49,60 @@ def scan_image(path, outdir, config=None, tesseract_cmd=None):
         if len(harris.candidates) < 4:
             raise PuzzleNotFoundError("Fewer than four Harris candidates")
         indices = select_outer_corners(pre, harris, config)
+        result["corner_selection"] = harris.selection_debug
         if indices is None:
             result["error_code"] = "puzzle_not_found"
         else:
             initial = validate_selection(indices, harris)
             selected = refine_selected(pre, initial)
             corners = validate_quad(selected * pre.scale_xy)
+            choices = []
+            orientation_config = replace(config,ocr_retry_unread=False) if config.try_quarter_turns else config
+            for turns in range(4 if config.try_quarter_turns else 1):
+                oriented_corners = np.roll(corners,-turns,axis=0)
+                candidate_models = estimate_models(oriented_corners,config.target_size)
+                h4 = cv2.warpPerspective(image,np.asarray(candidate_models["H4"]),
+                                         (config.target_size,config.target_size),flags=cv2.INTER_CUBIC,
+                                         borderValue=(255,255,255))
+                try:
+                    candidate_recognition = recognize(h4,orientation_config,tesseract_cmd,
+                                                       deadline=started+config.image_budget_s)
+                except (TimeoutError,RuntimeError):
+                    if choices:
+                        break
+                    raise
+                count = int(candidate_recognition.filled_mask.sum())
+                score = float(np.clip(candidate_recognition.confidence,0,100).sum()/max(count,1))
+                choices.append((score,turns,candidate_models,candidate_recognition))
+                if not count:
+                    break
+                recognized = int(np.count_nonzero(candidate_recognition.grid)) / count
+                # An already confident upright reading needs no costly trials
+                # of three clearly different orientations. Apply the same rule
+                # after every orientation; no image-specific choice is made.
+                if score >= 70.0 and recognized >= 0.85:
+                    break
+            _, turns, models, recognition = max(choices,key=lambda item:item[0])
+            corners = np.roll(corners,-turns,axis=0)
+            initial = np.roll(initial,-turns,axis=0)
+            selected = np.roll(selected,-turns,axis=0)
+            indices = np.roll(np.asarray(indices),-turns)
             result["corners"] = corners.astype(float).tolist()
             result["harris_candidate_indices"] = np.asarray(indices).astype(int).tolist()
             result["harris_selected_before_refinement"] = (initial * pre.scale_xy).astype(float).tolist()
             write_image(str(base) + "_harris.png", draw_harris(harris, selected))
-            models = estimate_models(corners, config.target_size)
+            result["orientation"] = {"candidate_cycle_shift":int(turns),"method":"mean single-character OCR confidence",
+                                     "hypotheses": [{"cycle_shift":int(item[1]),"score":round(item[0],4)} for item in choices]}
             result.update(models)
             images = rectify(image, models, config.target_size)
             for name, rectified in images.items():
                 write_image(str(base) + f"_rect_{name}.png", rectified)
-            recognition = recognize(images["H4"], config, tesseract_cmd,
-                                    deadline=started + config.image_budget_s)
+            if config.try_quarter_turns and config.ocr_retry_unread and recognition.unread_cells:
+                try:
+                    recognition = recognize(images["H4"],config,tesseract_cmd,
+                                            deadline=started+config.image_budget_s)
+                except (RuntimeError,TimeoutError):
+                    pass
             verdict, conflicts = check_validity(recognition.grid)
             result.update(grid=recognition.grid.tolist(), verdict=verdict, conflicts=conflicts,
                           filled_mask=recognition.filled_mask.tolist(), ocr_confidence=recognition.confidence.tolist(),

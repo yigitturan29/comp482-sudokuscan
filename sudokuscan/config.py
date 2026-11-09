@@ -5,13 +5,13 @@ from dataclasses import asdict, dataclass
 class Config:
     detection_max_side: int = 1400
     blur_fraction: float = 0.003
-    illumination_fraction: float = 0.045
+    illumination_fraction: float = 0.015
     adaptive_fraction: float = 0.035
     adaptive_c: float = 8.0
     harris_block_fraction: float = 0.003
     harris_ksize: int = 3
     harris_k: float = 0.04
-    harris_threshold: float = 0.01
+    harris_threshold: float = 0.0001
     nms_fraction: float = 0.007
     max_candidates: int = 2500
     target_size: int = 450
@@ -22,8 +22,9 @@ class Config:
     component_height_fraction: float = 0.25
     ocr_psm: int = 10
     ocr_retry_unread: bool = True
+    try_quarter_turns: bool = True
     ocr_timeout_s: float = 12.0
-    image_budget_s: float = 19.0
+    image_budget_s: float = 18.0
 
     def __post_init__(self):
         if self.detection_max_side < 100 or self.target_size < 90 or self.target_size % 9:

@@ -29,7 +29,9 @@ def preprocess(image, config: Config):
     gray = cv2.cvtColor(work, cv2.COLOR_BGR2GRAY)
     reference = min(gray.shape)
     gray = cv2.GaussianBlur(gray, (odd_kernel(reference, config.blur_fraction),) * 2, 0)
-    background = cv2.GaussianBlur(gray, (odd_kernel(reference, config.illumination_fraction),) * 2, 0)
+    background_size = odd_kernel(reference, config.illumination_fraction)
+    background = cv2.morphologyEx(gray, cv2.MORPH_CLOSE,
+                                  cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (background_size,background_size)))
     # Division compensates for slowly varying illumination; it is not histogram equalization.
     normalized = cv2.divide(gray, np.maximum(background, 1), scale=230)
     ink = cv2.adaptiveThreshold(normalized, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,

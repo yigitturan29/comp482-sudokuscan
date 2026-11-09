@@ -14,6 +14,7 @@ class HarrisResult:
     scores: np.ndarray
     block_size: int
     nms_radius: int
+    selection_debug: dict | None = None
 
 
 def detect_harris(pre: Preprocessed, config: Config):
