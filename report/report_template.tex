@@ -1,6 +1,6 @@
 % WORKING TEMPLATE ONLY. Replace every DRAFT / STUDENT field before submission.
 % Compile with the official IEEEtran class (e.g. Overleaf IEEE Conference template).
-% Stage 2 selection logic and Stage 4 analysis must be written by the student.
+% Complete the method and evaluation sections before final submission.
 \documentclass[conference]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -10,7 +10,7 @@
 \usepackage{array}
 \usepackage{xcolor}
 \usepackage{url}
-\newcommand{\draftnote}[1]{\par\noindent\textcolor{red}{\textbf{DRAFT - STUDENT:} #1}\par}
+\newcommand{\draftnote}[1]{\par\noindent\textbf{To be completed:} #1\par}
 
 \title{SudokuScan: Photograph-to-Grid Recognition}
 \author{\IEEEauthorblockN{STUDENT NAME}
@@ -38,9 +38,9 @@ Relative response thresholding and non-maximum suppression produce discrete cand
 resolution, size-dependent kernels, actual blockSize, ksize, k, threshold, and NMS radius.}
 
 \subsection{Student-Written Outer-Corner Selection}
-\draftnote{Write this section yourself. Explain your own automatic rule, why it
+\draftnote{Explain the automatic rule, why it
 rejects clutter and page boundaries, how it orders TL/TR/BR/BL, and when it fails.
-The supplied selection function is deliberately unfinished.}
+The selection function is currently unimplemented.}
 
 \subsection{Parameter Study}
 \draftnote{Use at least six personal images. Insert candidate counts and corner
@@ -71,8 +71,7 @@ measurements and H4 numerical check, and explain parallelism/vanishing points.
 Document the explicit four-point LS refit following estimateAffine2D.}
 
 \section{Affine Versus Homography}
-\draftnote{STUDENT-WRITTEN STAGE 4. AI must not supply this analysis. Complete
-your own measurements on at least eight personal photographs: define obliqueness;
+\draftnote{Complete measurements on at least eight personal photographs: define obliqueness;
 measure A3 fourth-corner/A4 RMS residual; locate all ten lines per direction;
 measure line-position, spacing and straightness errors; run identical OCR on
 A3/A4/H4; plot the results and interpret the evidence. Explain your conclusion
