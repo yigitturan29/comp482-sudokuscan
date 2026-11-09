@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import sys
+import subprocess
 
 import cv2
 import numpy as np
@@ -76,6 +77,32 @@ def test_blank_input_is_a_controlled_not_found(tmp_path):
     assert result["verdict"] == "not_found"
     assert result["error_code"] == "puzzle_not_found"
     assert result["runtime_s"] <= 20
+
+
+def test_cli_controlled_not_found_is_a_completed_batch(tmp_path):
+    images = tmp_path / "images"
+    images.mkdir()
+    for name in ("one.png", "two.png"):
+        write_image(images / name, np.full((300, 300, 3), 255, np.uint8))
+    output = tmp_path / "out"
+    run = subprocess.run([sys.executable, str(ROOT / "sudoku_scan.py"), "--batch", str(images),
+                          "--outdir", str(output)], capture_output=True, text=True, timeout=30)
+    assert run.returncode == 0, run.stderr
+    assert len(list(output.glob("*_result.json"))) == 2
+    assert all(json.loads(path.read_text())["verdict"] == "not_found" for path in output.glob("*_result.json"))
+
+
+def test_cli_attempts_later_images_after_a_decode_error(tmp_path):
+    images = tmp_path / "images"
+    images.mkdir()
+    (images / "a_bad.png").write_bytes(b"not an image")
+    write_image(images / "b_blank.png", np.full((300, 300, 3), 255, np.uint8))
+    output = tmp_path / "out"
+    run = subprocess.run([sys.executable, str(ROOT / "sudoku_scan.py"), "--batch", str(images),
+                          "--outdir", str(output)], capture_output=True, text=True, timeout=30)
+    assert run.returncode == 1
+    assert json.loads((output / "a_bad_result.json").read_text())["error_code"] == "ValueError"
+    assert json.loads((output / "b_blank_result.json").read_text())["error_code"] == "puzzle_not_found"
 
 
 def test_empty_detection_and_cell_preparation_on_clean_fixture():
