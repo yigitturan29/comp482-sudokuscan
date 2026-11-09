@@ -3,7 +3,7 @@
 ## Kendi başına prova
 
 1. Bir fotoğrafı komut satırından çalıştır; Harris ve debug çıktısını aç.
-2. `student_corner_selection.py` içindeki kendi kararını satır satır açıkla.
+2. `student_corner_selection.py` içindeki seçim yöntemini satır satır açıkla.
 3. Harris parametrelerinden birini değiştir; aday sayısı ve hata üzerindeki etkisini ölç.
 4. A3'ün hangi üç noktayı kullandığını bul; başka üçlüyle nasıl kuracağını AI olmadan uygula.
 5. `Config(target_size=576)` ayarının 64 piksel/hücre verdiğini açıkla ve çıktıyı kontrol et.

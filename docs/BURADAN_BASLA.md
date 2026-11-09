@@ -5,9 +5,9 @@ Bu ödev Sudoku çözmekten önce, bir fotoğraftaki ızgarayı düzgün bir dij
 tamamlaması değil, gerçekten fotoğraftan okuması gerekiyor.
 
 **Hazır olan:** görüntü hazırlama, Harris adayları, A3/A4/H4 dönüşümleri, hücre
-ayırma, Tesseract OCR, çakışma kontrolü, çıktı biçimi, etiketleme ve testler.
-**Senin yapacağın:** kendi fotoğrafların, dış köşe seçimi işlevi, gerçek deneyler,
-Stage 4 ölçüm/analizi, rapor sonuçları ve sözlü savunma. Otomatik proje henüz bitmedi.
+ayırma, Tesseract OCR, çakışma kontrolü, çıktı biçimi, otomatik dış köşe seçimi ve testler.
+**Kalan işler:** Stage 4 ölçüm/analizi, annotation incelemesi, telefon orijinalleri,
+nihai rapor kontrolü. Güncel durum `GUNCEL_DURUM.md` içindedir.
 
 ## İlk çalışma oturumu
 
@@ -19,9 +19,8 @@ Stage 4 ölçüm/analizi, rapor sonuçları ve sözlü savunma. Otomatik proje h
 4. `known_GT_debug.png` ile `known_GT_grid.txt` dosyasını karşılaştır.
 5. `demo_summary.json` içinde matrislerin boyutlarını ve gerçek demo ölçümlerini gör.
 
-Demo bilinen sentetik köşelerle çalışır. Otomatik seçimi bitirmediğin sürece
-`sudoku_scan.py` bu demo fotoğrafında bile `student_stage2_required` bildirebilir.
-Bu, eksik bölümün gizlenmemesi için bilinçli bir davranış.
+Demo bilinen sentetik köşelerle çalışır. Otomatik seçim için
+`sudoku_scan.py --input ... --outdir ...` komutunu kullan. Bu yol annotation okumaz.
 
 ## Harris'i öğrenirken
 
@@ -35,9 +34,9 @@ Göreli eşik, tepe cevabının hangi oranından güçlü noktaların tutulacağ
 NMS aynı fiziksel köşenin yan yana birçok aday üretmesini azaltır. Aday sayısının
 artması tek başına dış köşe doğruluğunun arttığı anlamına gelmez; bunu ölçmelisin.
 
-Dış köşe seçimi için hazır bir kural verilmedi. Kendi görüntülerindeki adayları
-inceleyip kararını tasarla. Kararının hangi görüntü bilgisini kullandığını,
-çıktı sırasını nasıl koruduğunu ve hangi durumda başarısız olduğunu kendin açıklayabilmelisin.
+Uygulanan dış köşe seçimi kontur bölge önerilerini Harris adaylarına bağlar ve
+10x10 çizgi düzenini puanlar. Yöntem `KOSE_SECIMI.md` içindedir. Hangi görüntü
+bilgisini kullandığını, sıralamayı ve başarısızlıklarını açıklayabilmelisin.
 PDF'nin izin verdiği genel yaklaşımlar ve kısıtlar için Stage 2'yi tekrar oku.
 
 ## İşlevin sözleşmesi
