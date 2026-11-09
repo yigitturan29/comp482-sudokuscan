@@ -1,23 +1,26 @@
-# Raporu hazırlama
+# IEEE raporunu üretme
 
-`report_template.tex` resmi `IEEEtran` konferans sınıfını kullanır; nihai rapor değildir.
-Overleaf'te IEEE Conference Template açıp içeriği bu dosyayla değiştirebilirsin.
-Yerel TeX dağıtımında `pdflatex report_template.tex` komutunu iki defa çalıştır.
-İlk iskelet hazırlandığında derleyici yoktu. 9 Kasım'da proje içindeki `.tools/tectonic/`
-dizinine resmi Tectonic dağıtımı indirildi; yerel rapor bu araçla derlenebilir.
+Tam pakette ölçülmüş PDF output/private/COMP482_SudokuScan_Rapor.pdf
+konumundadır. Ana metin, Stage 4 karşılaştırması, gerçek ölçümler, grafikler,
+dört hata örneği ve en sonda katkı/AI beyanı içerir.
 
-Gerçek OCR ölçümlerini içeren yerel taslak için `tools/build_received_report.py`
-çalıştırılır. Üretilen `report/private/report.tex` ve PDF öğrenci numarası/kişisel
-veri notları içerdiği için public depoya alınmaz. Şablondaki ve ölçümlü taslaktaki
-Stage 2 / Stage 4 öğrenci alanları tamamlanmadan rapor nihai değildir.
+Deneyleri yeniden üretmek:
 
-Kırmızı DRAFT alanlarını kendi gerçek yöntem ve sonuçlarınla değiştir.
-Stage 2 seçimi ve Stage 4 analizini kendin yaz. Ana rapor en çok 6 sayfa;
-ekler bu sınıra dahil değil. Gerçek görselleri ve sonuç tablolarını yerleştirdikten
-sonra PDF'yi görsel olarak kontrol et. Başarı yüzdesi uydurma.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deneyler.ps1 -OgrenciNo NUMARAN
+```
 
-Eklerin sırası: A veri/ek ölçümler, B tekrarlanabilirlik bilgileri, son ek olarak
-C AI kullanım beyanı. Tablodaki katkıları gerçek kullanımına göre güncelle.
+Rapor kaynağı report/private/report.tex ve figures altına yazılır. Yerel
+Tectonic veya bir TeX dağıtımının IEEEtran sınıfı gerekir. Bu bilgisayarda:
 
-`output/pdf/SudokuScan_Baslangic_Rehberi.pdf` Türkçe kullanım rehberidir;
-IEEE raporunun yerine teslim edilmez.
+```powershell
+.\.tools\tectonic\tectonic.exe --outdir output/private report/private/report.tex
+```
+
+Tectonic bir kerelik TeX paketlerini resmi bundle kaynağından indirebilir.
+Başka bilgisayarda report/private içindeki kaynak ve figures klasörü Overleaf'in
+IEEE Conference projesine birlikte yüklenebilir. report_template.tex boş
+başlangıç şablonudur; ölçülmüş rapor yerine teslim edilmez.
+
+Kişisel rapor ve fotoğraflar public depoya alınmaz. Veri kaynakları, EXIF eksikliği,
+annotation incelemesi ve gerçek katkı beyanı dosyada açıkça belirtilmiştir.
