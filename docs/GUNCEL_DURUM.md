@@ -1,39 +1,33 @@
-# Güncel durum - 9 Kasım 2026
+# Geliştirme durumu
 
-Tam otomatik teslim henüz hazır değildir. Çalışan destek kodu, 10 fotoğraf için
-AI destekli annotation taslakları ve gerçek OCR geliştirme ölçümleri hazırlandı.
+## Uygulanan modüller
 
-## Tamamlanan işler
+Ön işleme, Harris adayları, A3/A4/H4 dönüşümleri, hücre çıkarma, dolu/boş
+kararı, Tesseract OCR, givens doğrulaması ve istenen çıktı arayüzü mevcuttur.
+Otomatik dış köşe seçimi ve Stage 4 analizi geliştirme aşamasındadır.
 
-- Kullanıcının yeni 10 dosyası orijinal gelen baytları ve SHA-256 hash'leri korunarak kopyalandı.
-- Üç bulmaca için 9x9 givens ve 10 kare için köşe/koşul etiketleri taslak olarak girildi.
-- Elle verilen köşelerle A3/A4/H4 görüntüleri, matrisler ve debug çıktıları üretildi.
-- OCR hazırlamasında gölge düzeltme ve %8 marj eklendi; ham görüntü deney kolunda korunuyor.
-- Aynı PSM 10, whitelist ve okunamayan hücreye 2x tekrar kuralıyla ham/hazırlanmış ablation yapıldı.
-- Hazırlanmış hücreler 802/810 (%99,01), ham hücreler 741/810 (%91,48) doğru okundu.
-- Sekiz hata, dolu bulunan ama Tesseract'ın okuyamadığı hücrelerde kaldı. Boş/dolu F1 1,00.
-- 18 test geçti; güçlü gölge ve çok sayfalı OCR indekslemesi için regresyon kontrolleri mevcut.
-- IEEEtran rapor taslağı gerçek ölçümleri ve eksik öğrenci alanlarını içeriyor.
+## Veri ve deney
 
-Bu sayılar elle verilen köşelerle elde edilen geliştirme ölçümleridir. Bu veride
-ayar değiştirildiği için bağımsız test veya hidden-set başarı iddiası değildir.
-Otomatik arayüz, eksik öğrenci işlevini 10 karede de student_stage2_required olarak bildiriyor.
+Üç baskı belgesi ve 10 fotoğraf proje sahibi tarafından hazırlanmıştır.
+Görüntüler SHA-256 ile kontrol edilerek değiştirilmeden çalışma dizinine alınmıştır.
+Köşe/grid annotation'ları taslak durumundadır ve inceleme beklemektedir.
 
-## Öğrencinin tamamlayacağı işler
+Manuel H4 köşeleriyle 802/810 hücre (%99,01) doğru okunmuştur; ham kolda
+741/810 (%91,48) elde edilmiştir. Hazırlanmış grid exact match 6/10,
+boş/dolu F1 1,00'dır. Bu, aynı görüntülerle geliştirilen OCR aşamasının
+ölçümüdür; otomatik sistem veya bağımsız test sonucu değildir.
+18 modül testi geçmektedir. IEEEtran raporu veri toplama katkısını, yöntemi,
+ölçümleri, dört hata örneğini, sınırlamaları ve Ek C beyanını içerir.
 
-1. `student_corner_selection.py` içine kendi otomatik seçim mantığını yazmak.
-2. Gerçek otomatik seçimle Harris parametre çalışmasını ve tüm değerlendirmeleri çalıştırmak.
-3. Stage 4 çizgi ölçümleri, karşılaştırma grafikleri ve analizini kendisinin yazması.
-4. Annotation taslaklarını görsel olarak inceleyip doğrulamak/düzeltmek.
-5. Telefonda duran orijinalleri EXIF korunarak ayrı teslim etmek.
-6. Geliştirme kümesini LMS'den edinip ayrı ölçmek; nihai rapor ve AI beyanını tamamlamak.
+## Kalan işler
 
-Kaynak notu: kullanıcı üç Sudoku'yu ayrı belgelerde düzenleyip çıktı aldığını belirtti.
-Özgün internet kaynakları kaydedilmedi; bağlantı teslimi açıkça zorunlu olmasa da
-üç farklı kaynak şartı bu bilgilerle doğrulanamıyor. Üç dosya, kendiliğinden üç
-farklı özgün kaynak anlamına gelmez. Bir kaynak uydurulmadı.
+1. Harris adaylarından otomatik TL/TR/BR/BL seçimini uygulamak.
+2. En az altı görüntüde Harris parametreleri ve köşe-hata çalışmasını tamamlamak.
+3. En az sekiz görüntüde Stage 4 çizgi ölçümleri, grafikler ve analizi tamamlamak.
+4. Annotation taslaklarını gözden geçirmek ve tüm otomatik metrikleri yeniden ölçmek.
+5. Telefon orijinallerini EXIF korunarak veri teslimine eklemek.
+6. LMS geliştirme kümesini ayrı değerlendirmek; nihai rapor ve beyanı sonlandırmak.
 
-Fotoğraf 02-04 yatay dosyalarda yan duruyor. Downstream önizleme için etiket
-sırası açıkça dik bulmacaya göre verildi. Otomatik yön seçimi veya bonus olarak sunulmadı.
-Fotoğrafların üzerindeki el yazısı numara/tarih korunuyor; ayrı kart şartının
-katı yorumu için ders ekibinin değerlendirmesi geçerlidir.
+02-04 numaralı görüntülerde dik bulmaca yönü annotation sırasıyla tanımlanmıştır;
+bu işlem otomatik yön bulma bonusu olarak değerlendirilmez. Gelen PNG'lerde EXIF
+bulunmamaktadır. Üç özgün çevrimiçi kaynak, veri kaydında henüz yer almamaktadır.

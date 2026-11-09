@@ -1,27 +1,26 @@
-# AI kullanımı - bu çalışma oturumunun kaydı
+# Katkı dağılımı ve AI kullanım beyanı
 
-9 Kasım ek katkısı: kullanıcının gönderdiği 10 fotoğraf için AI destekli manuel
-annotation önerileri, gölge/hücre hazırlama düzeltmeleri, OCR geliştirme deneyleri
-ve bunları açıkça sınırlayan IEEE rapor taslağı üretildi. Annotation incelemesi
-öğrenci tarafından henüz yapılmadı. Stage 2 seçim mantığı ve Stage 4 analizi
-yazılmadı; bunlara ilişkin öğrenci onayı/imzası verilmedi.
+## Öğrenciye ait çalışmalar
 
-Bu dosya nihai imzalı beyan değildir. Gerçekten kullandığın katkıları kontrol et,
-raporun son ekindeki tabloya taşı ve kapsamı değişirse güncelle.
+- Üç Sudoku'nun seçilmesi ve ayrı baskı belgelerinin hazırlanması.
+- Baskıların alınması ve kendi telefonuyla toplam 10 fotoğrafın çekilmesi.
+- Farklı açılar ve gölge koşullarının fiziksel çekim sırasında uygulanması.
+- Öğrenci numarası ve tarihin ızgara dışına elle yazılması.
+- Fotoğrafların proje için sağlanması.
 
-| Araç | Amaç / aşama | İstenen yardım | Tutulan / değiştirilen / reddedilen |
+Bu çalışmalar AI tarafından üretilen fotoğraflar veya sentetik kişisel veri değildir.
+
+## Ek C tablosu
+
+| Araç | Amaç / aşama | İstenen yardım | Kullanılan / değiştirilen katkı |
 | --- | --- | --- | --- |
-| OpenAI Codex | Yönergeyi anlamak ve proje düzeni | PDF'nin incelenmesi, dosya/teslim planı | Türkçe başlangıç ve kontrol belgeleri oluşturuldu |
-| OpenAI Codex | Stage 1, Harris cevabı ve NMS altyapısı | Görüntü hazırlama ve aday üretimi | AI tarafından yazılan başlangıç kodu; öğrenci incelemesi ve izin kontrolü gerekli |
-| OpenAI Codex | Stage 3, 5, 6 ve yazılım araçları | Dönüşümler, hücreler, OCR, geçerlilik, CLI, etiketleme, metrikler, testler | AI tarafından yazılan kod; öğrenci incelemesi ve izin kontrolü gerekli |
-| OpenAI Codex | Stage 2 dış köşe seçimi | Otomatik seçim | Yazılmadı; öğrenci işlevi NotImplementedError bırakıldı |
-| OpenAI Codex | Stage 4 karşılaştırma analizi | Analiz ve sonuçlar | Yazılmadı; öğrenci çalışma alanı bırakıldı |
-| OpenAI Codex | Rapor / test | IEEEtran iskeleti, sentetik testler ve ölçülen test özeti | Kişisel veri sonuçları üretilmedi; nihai rapor değil |
+| OpenAI Codex | Yazılım altyapısı: Stage 1, 3, 5, 6 ve Harris/NMS adayları | Modüler uygulama, CLI, doğrulama ve test geliştirme | Üretilen kod, OCR hazırlama değişiklikleri ve testler projeye alındı; öğrenci kod incelemesi bekliyor |
+| OpenAI Codex | Veri etiketleme desteği | Fotoğraflardan köşe ve givens taslakları hazırlama | Manuel annotation önerileri kaydedildi; öğrenci doğrulaması bekliyor |
+| OpenAI Codex | Deney ve rapor desteği | Ham/hazırlanmış OCR ölçümleri, tablolar, rapor düzenleme | Gerçek ölçüm çıktıları ve rapor metni kullanıldı; ölçümlerin yalnızca manuel geometri kapsamı belirtildi |
+| OpenAI Codex | Stage 2 dış köşe seçimi | Otomatik seçim mantığı | Üretilmedi; işlev henüz uygulanmadı |
+| OpenAI Codex | Stage 4 karşılaştırma analizi | Affine/homography analizi | Üretilmedi; bölüm henüz tamamlanmadı |
 
-Yönerge AI'yı öğrenme desteği olarak tanımlar. Bu paketin kod üretimi katkısı
-öğrenme açıklamasından daha geniştir. İzin verilen kullanım kapsamını ders ekibiyle
-netleştirmeden bütün kodu kendi yazmış gibi teslim etme.
-
-PDF Ek C'deki "köşe seçimi mantığını ve karşılaştırma analizini kendim yazdım"
-onayını yalnızca gerçekten sen yazdıktan ve tüm kodu açıklayıp değiştirebilir
-duruma geldikten sonra tamamla. Ad, numara, tarih ve imza öğrenci tarafından girilir.
+Öğrenciye ait veri toplama katkıları ile yazılım/rapor yardımının kapsamı ayrı
+kaydedilmiştir. Nihai beyan, son değişiklikler gözden geçirildikten sonra öğrenci
+tarafından tamamlanır. Yönergedeki köşe seçimi ve karşılaştırma analizi yazarlığı
+onayı, ilgili çalışmalar tamamlanıp doğrulanmadan imzalanmamıştır.
