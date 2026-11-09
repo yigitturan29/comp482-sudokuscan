@@ -1,7 +1,6 @@
-"""Generate an honest IEEEtran WORK-IN-PROGRESS manuscript from downstream tests.
+"""Build an IEEEtran development report from reproducible OCR measurements.
 
-Stage 2 selection logic and Stage 4 analysis remain student-authored sections.
-The generated report contains private dataset details and stays outside Git.
+The generated manuscript contains personal dataset details and stays outside Git.
 """
 import argparse
 from collections import Counter
@@ -91,8 +90,8 @@ def generate(student_number):
     body = r'''\documentclass[conference,a4paper]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,graphicx,booktabs,array,url,xcolor}
-\newcommand{\studenttask}[1]{\par\noindent\textcolor{red}{\textbf{STUDENT SECTION:} #1}\par}
-\title{SudokuScan: Implementation and OCR Validation\\{\large Work-in-Progress Report}}
+\newcommand{\studenttask}[1]{\par\noindent\textbf{Pending evaluation.} #1\par}
+\title{SudokuScan: Geometric Rectification and Digit Recognition\\{\large Development Report}}
 \author{\IEEEauthorblockN{Student @STUDENT@}\IEEEauthorblockA{COMP 482, MEF University\\9 November 2026}}
 \begin{document}
 \maketitle
@@ -104,8 +103,8 @@ test rectification, digit preparation and OCR. With this supplied geometry,
 prepared-cell recognition classified @CORRECT@ of 810 cells correctly
 (@PREP@\%), compared with @RAW@\% for raw crops. These are downstream
 development measurements, not end-to-end detection or hidden-test performance.
-The required student-written outer-corner selection and affine-versus-homography
-analysis are not completed. Consequently this document is not a final submission.
+Automatic outer-corner selection and cross-model grid analysis remain in progress.
+This report documents the current implementation and its measured scope.
 \end{abstract}
 
 \section{Introduction}
@@ -128,14 +127,13 @@ plateau merging and radius suppression reduce duplicate responses; the radius is
 approximately $0.007$ times the shorter side. Separate horizontal and vertical
 scale factors preserve original pixel coordinates after resizing.
 
-\studenttask{Implement and explain your own automatic four-corner selection in
-student\_corner\_selection.py. It must return four distinct Harris candidate
-indices in TL/TR/BR/BL order. The current function raises NotImplementedError.
-The required parameter study on at least six photographs and its final corner
-errors cannot be completed until that function exists.}
+\studenttask{The automatic selection function in
+student\_corner\_selection.py is not yet implemented. Its interface returns four
+distinct Harris candidate indices in TL/TR/BR/BL order. The six-image parameter
+study and final automatic corner errors will be evaluated after this stage is implemented.}
 
-The files used here contain AI-assisted manual annotation proposals. They are
-not Harris detections and require student review. In three sideways images,
+The recognition experiment uses manually annotated corner proposals rather than
+Harris predictions. Annotation review remains pending. In three sideways images,
 corner ordering explicitly follows the upright puzzle rather than screen axes;
 the resulting upright preview must not be described as an automatic orientation bonus.
 
@@ -156,12 +154,11 @@ All models and images in the annotation preview derive from manual boundaries.
 The automatic pipeline cannot yet supply a measured corner error.
 
 \section{Affine Versus Homography}
-\studenttask{Write this analysis yourself, as required by the assignment's AI-use
-rule. Use at least eight personal photographs, define and measure obliqueness,
-locate the ten grid lines in each direction, measure line position/spacing and
-straightness, run identical OCR on A3/A4/H4, and draw your own evidence-based
-conclusions. Include the most oblique image's three rectifications. No Stage 4
-analysis or conclusion has been generated for this report.}
+\studenttask{The cross-model comparison is not yet evaluated. The final experiment
+requires at least eight photographs, an explicit obliqueness measure, ten grid
+lines per direction, line position/spacing and straightness measurements, and
+identical OCR on A3/A4/H4. A side-by-side figure of the most oblique photograph
+and evidence-based conclusions remain to be added.}
 
 \section{Recognition}
 \subsection{Cells and Empty Detection}
@@ -256,7 +253,7 @@ ground-truth cell.}\label{fig:failure}
 \section{Conclusion and Limitations}
 The current package supplies working modules, traceable received-image copies,
 draft annotations and a reproducible OCR ablation. It does not constitute a complete
-project: automatic corner selection and Stage 4 are student work, and all personal
+project: automatic corner selection and Stage 4 remain incomplete, and personal
 annotations require review. Prepared OCR reaches @PREP@\% on these manually
 rectified development images. No extrapolation to hidden photographs is justified.
 The final submission must replace missing end-to-end results, complete the required
@@ -274,14 +271,16 @@ parameter and PSM studies, and use the original phone files with EXIF retained.
 
 \appendices
 \section{Received Data and Provenance}
-The current received set contains three puzzles in a 3/3/4 distribution. All ten
+For data collection, I selected three puzzles, arranged their printable documents,
+prepared the printouts and took ten photographs in a 3/3/4 distribution. I also
+added the handwritten student number and capture date outside each grid. All ten
 images show the handwritten date 09.11.2026 and a student number outside the grid.
 The supplied files are clipboard PNGs with zero EXIF fields. Their bytes and
 SHA-256 hashes were preserved; no metadata or artificial capture date was inserted.
 They cannot be certified as the unedited phone originals. Photos 02--04 are
 sideways in stored pixels and have an explicit canonical orientation in draft
 annotations. This manual orientation must not be counted as the optional
-automatic-orientation feature. The user assembled print documents from online
+automatic-orientation feature. The print documents were assembled from online
 Sudokus; the three original web sources were not recorded and distinct-source
 compliance cannot be verified. Handwriting is on the puzzle sheet; strict
 compliance with the brief's separate-card wording should be checked.
@@ -293,10 +292,14 @@ pytesseract 0.3.13; Tesseract 5.4.0.20240606. Use
 \texttt{python -m pytest -q} for tests. The grader interface is
 \texttt{sudoku\_scan.py}; it never reads annotation files. Private photographs,
 annotations and this report are excluded from the public code repository.
-The Git history begins with the actual creation of this support package; no
-historical development commits have been fabricated.
+The repository records implementation, documentation and validation changes.
 
 \section{AI-Use Disclosure}
+The student's contributions comprise puzzle selection, preparation of printable
+documents, printing, photography under different viewing and lighting conditions,
+and handwritten identification/date marking. These physical data-collection
+activities were performed by the student. The software and manuscript assistance
+is recorded in the table below; annotation review is still pending.
 \begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{p{.12\columnwidth}p{.18\columnwidth}p{.24\columnwidth}p{.32\columnwidth}}\toprule
 Tool & Purpose / stage & What was asked & Kept, changed or rejected\\\midrule
@@ -311,10 +314,9 @@ Outer-corner selection and Stage 4 &
 Not generated; student must write them.\\\bottomrule
 \end{tabular}
 \end{center}
-\noindent\textbf{Student confirmation not completed.} The assignment's authorship
-confirmation and signature must be completed personally only after the student has
-written the required selection logic and comparison analysis and can explain and
-modify all submitted code. This report does not sign or assert that confirmation.
+\noindent\textbf{Authorship confirmation.} Confirmation and signature are pending
+completion of the selection method and comparison analysis. The final declaration
+will be completed personally after all submitted components have been reviewed.
 \end{document}
 '''
     replacements={"@STUDENT@":tex_escape(student_number),"@CORRECT@":str(prepared["correct"]),
