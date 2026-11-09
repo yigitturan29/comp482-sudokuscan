@@ -21,8 +21,11 @@ def main():
     parser.add_argument("--images", type=Path, required=True)
     parser.add_argument("--annotations", type=Path, required=True)
     parser.add_argument("--out", type=Path, default=Path("results/harris_study.csv"))
+    parser.add_argument("--upright-only", action="store_true", help="Exclude annotated quarter-turn inputs from detector-only study")
     args = parser.parse_args()
     annotations = sorted(args.annotations.glob("*.json"))
+    if args.upright_only:
+        annotations = [path for path in annotations if not load_annotation(path).get("normalizing_quarter_turn_clockwise", 0)]
     if len(annotations) < 6:
         parser.error("Parameter study requires at least 6 annotated images")
     base = Config()
