@@ -8,9 +8,10 @@ düzeltilmesi, hücrelere ayrılması ve rakamların dijital 9x9 ızgaraya aktar
 
 Ön işleme, Harris cevabı ve aday üretimi, A3/A4/H4 dönüşümleri, dolu/boş hücre
 kararı, OCR ve Sudoku geçerlilik kontrolü uygulanmıştır. Otomatik dış köşe seçimi
-`student_corner_selection.py` içinde henüz tamamlanmamıştır. Mevcut fotoğraf
-deneyleri elle etiketlenmiş köşelerle yapılmıştır; tam otomatik sistem sonucu değildir.
-Affine/homography karşılaştırmasının çizgi ölçümleri ve sonuç analizi de tamamlanacaktır.
+`student_corner_selection.py` içindedir: konturlar bölge önerir, son dört nokta
+Harris adaylarından seçilir ve 10x10 çizgi düzeniyle puanlanır. Yön seçimi OCR
+güvenine dayanır. Affine/homography karşılaştırmasının çizgi ölçümleri ve sonuç
+analizi hâlâ tamamlanacaktır.
 
 ## Kurulum
 
@@ -50,7 +51,6 @@ python sudoku_scan.py --input photo.jpg --outdir out/
 python sudoku_scan.py --batch images_dir/ --outdir results/
 ```
 
-Otomatik seçim tamamlanana kadar `student_stage2_required` hata kodu döner.
 Seçim bulunamadığında `verdict: not_found` kaydedilir; batch diğer görüntülerle sürer.
 Başarılı görüntülerde `_grid.txt`, `_result.json`, `_harris.png`, `_rect_A3.png`,
 `_rect_A4.png`, `_rect_H4.png` ve `_debug.png` üretilir. Grid dosyası ayraçsız
@@ -98,15 +98,15 @@ python tools/ocr_study.py --annotations data/personal/annotations --results resu
 python -m pytest -q
 ```
 
-18 modül testi geçmektedir. Testler dönüşümleri, en küçük kareler uyumunu,
+21 modül testi geçmektedir. Testler dönüşümleri, en küçük kareler uyumunu,
 koordinat ölçeklemesini, boş/bozuk görüntüleri, gölge altında hücre tespitini,
 Sudoku çakışmalarını ve çok sayfalı OCR indekslemesini kapsar.
-Otomatik seçim tamamlanmadan Harris köşe-hata çalışması tamamlanamaz.
+Otomatik seçim yönteminin ayrıntıları `docs/KOSE_SECIMI.md` dosyasındadır.
 
 ## Dosya düzeni
 
 - `sudokuscan/`: ön işleme, Harris, geometri, OCR, metrikler ve doğrulama.
-- `student_corner_selection.py`: otomatik dört köşe seçimi arayüzü.
+- `student_corner_selection.py`: Harris adaylarından otomatik dört köşe seçimi.
 - `sudoku_scan.py`: tek görüntü / batch giriş noktası.
 - `tools/`: etiketleme, deney, rapor ve dışa aktarma araçları.
 - `tests/`: modül testleri.
@@ -125,3 +125,18 @@ doğru OCR, çözülebilirlik veya tek çözüm garantisi değildir.
 ve [Tesseract belgeleri](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html)
 API başvurularıdır. Araç kullanımı ve katkı dağılımı raporun Ek C bölümünde ve
 [AI kullanım beyanında](docs/AI_KULLANIM_BEYANI.md) kayıtlıdır.
+
+## Otomatik köşe seçimi güncellemesi
+
+Otomatik arayüz artık annotation okumadan çalışır. Gerçek fotoğraflardaki tam
+çıktılar ve değerlendirme sonuçları ayrı veri paketindeki `results/automatic_received/`
+ve `results/automatic_received_metrics.json` konumlarında bulunur. Bu on fotoğraf
+geliştirmede kullanılmıştır; hidden-set veya bağımsız test başarısı değildir.
+
+Son otomatik geliştirme koşusunda 10/10 fotoğraf işlendi: 801/810 hücre (%98,89),
+6/10 tam ızgara ve %0,658 ortalama köşe hatası. Süreler 5.69-15.79 saniyedir.
+Yedi dik fotoğrafta Harris parametre çalışması 84 deney içerir.
+
+Otomatik H4 çıktılarında PSM 7/8/10/13 için ham/hazırlanmış 80 OCR deneyi
+tamamlandı. Hazırlanmış kolda PSM 7 ve 10 %98,89 ile eşit sonuç verdi;
+PSM 8 ve 13 %70,00 değerinde kaldı. Tam kayıtlar ayrı veri paketindedir.
