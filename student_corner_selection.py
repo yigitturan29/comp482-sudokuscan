@@ -1,7 +1,4 @@
-"""STUDENT-AUTHORED SECTION - Project PDF, Section 11.
-
-This function is deliberately unfinished. The provided course brief does not
-permit generative AI to write the outer-corner selection logic.
+"""Automatic outer-corner selection interface (implementation pending).
 
 Inputs use the working-image coordinate system:
     pre.color / pre.normalized / pre.ink: preprocessed images
@@ -15,7 +12,7 @@ The pipeline validates provenance and applies optional cornerSubPix refinement.
 
 Do not load annotations, inspect filenames, use clicks or output contour-derived
 coordinates here. Ground-truth annotations belong exclusively to the tools.
-Write and explain your own rule before using the automatic grading interface.
+The automatic pipeline requires an implementation before end-to-end evaluation.
 """
 
 
