@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from demo import GRID, render_grid
+from demo import GRID, render_grid, synthetic_fixture
+from student_corner_selection import select_outer_corners
 from evaluate import evaluate
 from sudokuscan.config import Config
 from sudokuscan.geometry import estimate_models, rectify, transform_points
@@ -133,13 +134,51 @@ def test_failure_outputs_do_not_crash_or_reuse_stale_outputs(tmp_path):
     assert json.loads((output / "bad_result.json").read_text())["verdict"] == "not_found"
 
 
-def test_student_stage_is_explicitly_unfinished(tmp_path):
+def test_automatic_selection_uses_harris_points_and_rejects_a_plain_rectangle():
+    image, truth = synthetic_fixture()
+    pre = preprocess(image, Config())
+    harris = detect_harris(pre, Config())
+    indices = select_outer_corners(pre, harris, Config())
+    assert indices is not None
+    predicted = validate_selection(indices,harris) * pre.scale_xy
+    assert corner_error_percent(predicted,truth) < 2.0
+    rectangle = np.full((700,900,3),255,np.uint8)
+    cv2.rectangle(rectangle,(80,70),(800,630),(0,0,0),4)
+    pre = preprocess(rectangle,Config())
+    assert select_outer_corners(pre,detect_harris(pre,Config()),Config()) is None
+
+
+def test_larger_background_rectangle_does_not_win_over_grid():
+    image, truth = synthetic_fixture()
+    canvas = np.full((1200,1800,3),245,np.uint8)
+    canvas[:,:1400]=image
+    cv2.rectangle(canvas,(1430,40),(1770,1150),(0,0,0),8)
+    pre=preprocess(canvas,Config())
+    harris=detect_harris(pre,Config())
+    indices=select_outer_corners(pre,harris,Config())
+    assert indices is not None
+    assert corner_error_percent(harris.candidates[indices]*pre.scale_xy,truth) < 2.0
+
+
+def test_automatic_pipeline_writes_required_files(tmp_path):
+    try:
+        find_tesseract()
+        import pytesseract
+    except (RuntimeError, ImportError):
+        pytest.skip("Tesseract OCR not installed")
     path = tmp_path / "fixture.png"
-    write_image(path, render_grid())
+    image, truth = synthetic_fixture()
+    write_image(path, image)
     result = scan_image(path, tmp_path / "out")
-    assert result["error_code"] == "student_stage2_required"
-    assert result["verdict"] == "not_found"
+    assert result["processing_ok"]
+    assert corner_error_percent(result["corners"],truth) < 2.0
+    assert len(set(result["harris_candidate_indices"])) == 4
+    assert result["corner_selection"]["corner_source"] == "Harris candidate indices"
     assert (tmp_path / "out" / "fixture_harris.png").exists()
+    for model in ("A3","A4","H4"):
+        assert read_image(tmp_path / "out" / f"fixture_rect_{model}.png").shape[:2] == (450,450)
+    lines=(tmp_path / "out" / "fixture_grid.txt").read_text().splitlines()
+    assert len(lines)==9 and all(len(line)==9 and line.isdigit() for line in lines)
 
 
 def test_unicode_image_paths(tmp_path):
@@ -147,6 +186,23 @@ def test_unicode_image_paths(tmp_path):
     image = np.full((30, 40, 3), 192, np.uint8)
     write_image(path, image)
     assert np.array_equal(read_image(path), image)
+
+
+def test_quarter_turn_orientation_is_chosen_from_ocr(tmp_path):
+    try:
+        find_tesseract()
+        import pytesseract
+    except (RuntimeError, ImportError):
+        pytest.skip("Tesseract OCR not installed")
+    image, truth = synthetic_fixture()
+    rotated = cv2.rotate(image,cv2.ROTATE_90_CLOCKWISE)
+    expected_corners = np.column_stack([image.shape[0]-1-truth[:,1],truth[:,0]])
+    path=tmp_path / "rotated.png"
+    write_image(path,rotated)
+    result=scan_image(path,tmp_path / "out")
+    assert result["processing_ok"]
+    assert corner_error_percent(result["corners"],expected_corners) < 2.0
+    assert np.mean(np.asarray(result["grid"])==GRID) >= .95
 
 
 def test_missing_results_get_no_free_empty_cell_accuracy(tmp_path):
