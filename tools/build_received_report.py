@@ -3,6 +3,7 @@
 The generated manuscript contains personal dataset details and stays outside Git.
 """
 import argparse
+import csv
 from collections import Counter
 from pathlib import Path
 import json
@@ -87,6 +88,31 @@ def generate(student_number):
                               f"{100*r['ocr']['prepared']['cell_accuracy']:.2f} & {r['runtime_s']:.2f} \\\\" for i,r in enumerate(records))
     condition_rows="\n".join(f"{c} & {n} & {raw:.2f} & {prepared:.2f} \\\\" for c,n,raw,prepared in by_condition)
     raw,prepared=stats["raw"],stats["prepared"]
+    automatic=json.loads((ROOT / "results/automatic_received_metrics.json").read_text(encoding="utf-8"))
+    auto=automatic["overall"]
+    auto_times=[r["runtime_s"] for r in automatic["samples"]]
+    study={}
+    with (ROOT / "results/harris_study.csv").open(encoding="utf-8") as stream:
+        for row in csv.DictReader(stream):
+            study.setdefault(row["variant"],[]).append(row)
+    study_rows=[]
+    for name,rows in study.items():
+        errors=[float(row["corner_error_percent"]) for row in rows if row["corner_error_percent"]]
+        short=name.replace("harris_block_fraction","block fraction").replace("harris_ksize","ksize").replace("harris_k","k").replace("harris_threshold","threshold")
+        study_rows.append(f"{tex_escape(short)} & {len(errors)}/{len(rows)} & "
+                          f"{np.mean([int(row['candidates']) for row in rows]):.1f} & "
+                          + (f"{np.mean(errors):.3f}" if errors else "--") + r" \\")
+    ocr_study=json.loads((ROOT / "results/ocr_study/measurements.json").read_text(encoding="utf-8"))
+    psm_rows=[]
+    for psm in (7,8,10,13):
+        values=[]
+        for prepared_arm in (False,True):
+            subset=[row for row in ocr_study["measurements"]
+                    if row["psm"] == psm and row["prepared"] == prepared_arm]
+            if len(subset) != 10:
+                raise ValueError("PSM study requires results for all ten supplied images")
+            values.append(float(np.mean([row["cell_accuracy"] for row in subset]))*100)
+        psm_rows.append(f"{psm} & {values[0]:.2f} & {values[1]:.2f}" + r" \\")
     body = r'''\documentclass[conference,a4paper]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,graphicx,booktabs,array,url,xcolor}
@@ -103,8 +129,9 @@ test rectification, digit preparation and OCR. With this supplied geometry,
 prepared-cell recognition classified @CORRECT@ of 810 cells correctly
 (@PREP@\%), compared with @RAW@\% for raw crops. These are downstream
 development measurements, not end-to-end detection or hidden-test performance.
-Automatic outer-corner selection and cross-model grid analysis remain in progress.
-This report documents the current implementation and its measured scope.
+Automatic Harris-based boundary selection is also implemented and evaluated on
+the same ten development images: cell accuracy is @AUTOACC@\%, with @AUTOCORNER@\%
+mean normalized corner error. Cross-model grid analysis remains incomplete.
 \end{abstract}
 
 \section{Introduction}
@@ -114,28 +141,52 @@ verdict. Printed strokes, faint grid lines, perspective, shadows and surrounding
 objects make each step necessary. The implemented support modules cover size-aware
 preprocessing, Harris candidates, geometric estimation, explicit filled-cell
 detection, Tesseract OCR, validity checks and the specified command-line interface.
-The current experiments isolate recognition using draft manual corner annotations;
-no ground-truth lookup is allowed in the automatic interface.
+One experiment isolates recognition using draft manual corner annotations;
+a second runs the complete automatic interface without a ground-truth lookup.
 
 \section{Corner Detection}
-The working image has a maximum side of 1400 pixels. Smooth background division
-compensates for uneven illumination before Harris detection. The response is
+The working image has a maximum side of 1400 pixels. Grayscale morphological
+closing with an elliptical kernel approximately 0.015 times the shorter side
+estimates the illumination field. Division by that field compensates for shadows.
+The response is
 $R=\det(M)-k\operatorname{tr}(M)^2$, with $k=0.04$, Sobel aperture 3 and a
 block width of approximately $0.003$ times the shorter working-image side, with
-a minimum of two pixels. Candidates exceed $0.01\max(R)$. Local maximum filtering,
+a minimum of two pixels. Candidates exceed $0.0001\max(R)$. Local maximum filtering,
 plateau merging and radius suppression reduce duplicate responses; the radius is
 approximately $0.007$ times the shorter side. Separate horizontal and vertical
 scale factors preserve original pixel coordinates after resizing.
 
-\studenttask{The automatic selection function in
-student\_corner\_selection.py is not yet implemented. Its interface returns four
-distinct Harris candidate indices in TL/TR/BR/BL order. The six-image parameter
-study and final automatic corner errors will be evaluated after this stage is implemented.}
+Contours of the thresholded image propose convex quadrilateral search regions;
+they do not provide final coordinates. For each proposal, the seven closest
+Harris candidates within 5.5\% of mean side length are considered at each corner.
+Candidate-only coordinate descent over the best three regions maximizes evidence
+for ten horizontal and ten vertical lines after a temporary homography. Long-line
+projections reward the expected spacing and penalize ink between lines. The global
+acceptance threshold is 0.24. All four distinct returned indices belong to the
+Harris array. The pipeline subsequently applies local \texttt{cornerSubPix}
+refinement. Page edges without grid evidence are rejected.
 
-The recognition experiment uses manually annotated corner proposals rather than
-Harris predictions. Annotation review remains pending. In three sideways images,
-corner ordering explicitly follows the upright puzzle rather than screen axes;
-the resulting upright preview must not be described as an automatic orientation bonus.
+The top edge is chosen using opposite-edge horizontal alignment and midpoint
+height. Four cyclic corner orders can then be tested by mean single-character
+OCR confidence. Search stops early when mean confidence reaches 70 and at least
+85\% of detected filled cells have digits. Wrong-orientation trials omit the
+enlargement retry; only the selected orientation may retry unread cells.
+No Sudoku solution or annotation is used to select the orientation.
+
+\begin{table}[t]\centering\footnotesize
+\caption{One-factor Harris study on seven upright development images. Error is
+mean corner error (\% side) over successful detections only; all failures remain counted.}
+\begin{tabular}{lrrr}\toprule
+Variant & Found & Candidates & Error (\%)\\\midrule
+@HARRIS_ROWS@
+\bottomrule\end{tabular}
+\end{table}
+The upright subset is photos 01 and 05--10; sideways images are excluded from
+this detector-only study to avoid mixing orientation error with corner location.
+The study supports retaining weak Harris responses: a higher threshold loses
+several grids, even though its successful-only error can appear lower. The
+baseline block fraction remains 0.003; a small development-set gain from 0.002
+does not establish better performance on unseen images. All settings are global.
 
 \section{Rectification}
 A3 uses \texttt{getAffineTransform} on TL, TR and BL. Its two-by-three matrix has
@@ -150,8 +201,8 @@ The continuous target boundary is $(0,0),(450,0),(450,450),(0,450)$, matching
 the assignment's residual convention. Raster samples range from 0 to 449.
 The implementation reports the A3 BR target location and its distance to
 $(450,450)$, A4 four-point RMS residual, and H4 maximum numerical residual.
-All models and images in the annotation preview derive from manual boundaries.
-The automatic pipeline cannot yet supply a measured corner error.
+Models in the annotation preview derive from manual boundaries. Separately,
+the automatic pipeline writes all three models from its selected Harris corners.
 
 \section{Affine Versus Homography}
 \studenttask{The cross-model comparison is not yet evaluated. The final experiment
@@ -189,6 +240,19 @@ The retry rule and filled mask are identical in the raw and prepared arms.
 The raw arm receives the original unnormalized inner crop.
 
 \begin{table}[t]\centering
+\caption{PSM study on automatic H4 images. Cell accuracy (\%) over all 810 cells;
+identical filled mask and optional twofold unread retry in each arm.}
+\begin{tabular}{crr}\toprule
+PSM & Raw & Prepared\\\midrule
+@PSM_ROWS@
+\bottomrule\end{tabular}
+\end{table}
+All four PSM settings were measured on the same ten automatic H4 outputs.
+The complete grids, confusion counts and error crops are retained in
+\texttt{results/ocr\_study}. These are recognition experiments on this
+development set, without selecting digits from Sudoku solutions.
+
+\begin{table}[t]\centering
 \caption{Recognition with manual annotation geometry; not detector scores.}
 \begin{tabular}{lrr}\toprule
 Metric & Raw & Prepared\\\midrule
@@ -222,13 +286,19 @@ Condition & Images & Raw (\%) & Prepared (\%)\\\midrule
 \bottomrule\end{tabular}
 \end{table}
 
-The support code has 18 passing module tests, including affine least-squares
+The code has 21 passing tests, including affine least-squares
 optimality, homography mapping, original-coordinate scaling, blank and malformed
 inputs, row/column/box conflicts, Unicode paths, shadowed filled-cell detection,
-multi-page OCR mapping and blank-page index preservation. The tests do not
-establish hidden-set accuracy. End-to-end corner error, recognition accuracy,
-grid exact match and robustness remain unmeasured because automatic selection
-is unfinished. Development-set files referenced by the assignment were not supplied.
+multi-page OCR mapping, blank-page index preservation, candidate-only automatic
+selection, clutter rejection and cyclic OCR orientation. The tests do not
+establish hidden-set accuracy. On all ten supplied images, the automatic run
+processed @AUTON@/10 images, classified @AUTOCORRECT@/810 cells correctly
+(@AUTOACC@\%), and achieved @AUTOEXACT@/10 exact grids. Empty-cell F1 is
+@AUTOF1@. Mean corner error is @AUTOCORNER@\% over @AUTOCORNERCOUNT@ scored images.
+Runtime ranged from @MINTIME@ to @MAXTIME@ seconds; @AUTOROBUST@/10 completed
+within 20 seconds. This is development-set evidence with draft annotations,
+not an independent evaluation. The supplied images were used during development.
+Development-set files referenced by the assignment were not supplied.
 Recognition errors are not filled by solving Sudoku or consulting ground truth.
 The validity verdict checks repeated givens only, and does not prove OCR correctness
 or solution uniqueness.
@@ -241,8 +311,9 @@ passes the filled decision but returns no whitelisted digit after the retry.
 This localizes the observed failure to preparation/OCR rather than empty-cell
 classification in these examples. The weak, rasterized print and small glyphs
 are visible in the crops; further experiments are needed to distinguish their
-individual effects. No claim is made that an automatic detector would locate
-these photographs correctly.
+individual effects. These crops belong to the manual-geometry OCR experiment;
+the automatic experiment uses separately estimated boundaries and has its own
+error counts.
 \begin{figure}[t]\centering
 \includegraphics[width=\columnwidth]{figures/unread_examples.png}
 \caption{Four actual downstream failures. Within each example, left: raw crop,
@@ -253,11 +324,11 @@ ground-truth cell.}\label{fig:failure}
 \section{Conclusion and Limitations}
 The current package supplies working modules, traceable received-image copies,
 draft annotations and a reproducible OCR ablation. It does not constitute a complete
-project: automatic corner selection and Stage 4 remain incomplete, and personal
+project: Stage 4 remains incomplete, and personal
 annotations require review. Prepared OCR reaches @PREP@\% on these manually
 rectified development images. No extrapolation to hidden photographs is justified.
-The final submission must replace missing end-to-end results, complete the required
-parameter and PSM studies, and use the original phone files with EXIF retained.
+The final submission must complete the cross-model analysis,
+review annotations, and use the original phone files with EXIF retained.
 
 \begin{thebibliography}{4}
 \bibitem{brief} COMP 482, ``Project 1: SudokuScan,'' Fall 2026, supplied assignment brief.
@@ -279,8 +350,8 @@ The supplied files are clipboard PNGs with zero EXIF fields. Their bytes and
 SHA-256 hashes were preserved; no metadata or artificial capture date was inserted.
 They cannot be certified as the unedited phone originals. Photos 02--04 are
 sideways in stored pixels and have an explicit canonical orientation in draft
-annotations. This manual orientation must not be counted as the optional
-automatic-orientation feature. The print documents were assembled from online
+annotations. This manual preview orientation is separate from the automatic
+pipeline's OCR-based cyclic search. The print documents were assembled from online
 Sudokus; the three original web sources were not recorded and distinct-source
 compliance cannot be verified. Handwriting is on the puzzle sheet; strict
 compliance with the brief's separate-card wording should be checked.
@@ -289,7 +360,9 @@ compliance with the brief's separate-card wording should be checked.
 Windows CPU; Python 3.11; OpenCV 4.10.0; NumPy 2.4.1; Pillow 11.1.0;
 pytesseract 0.3.13; Tesseract 5.4.0.20240606. Use
 \texttt{tools/preview\_annotations.py} to reproduce manual-geometry previews and
-\texttt{python -m pytest -q} for tests. The grader interface is
+\texttt{python -m pytest -q} for tests. Use \texttt{sudoku\_scan.py --batch}
+followed by \texttt{tools/evaluate.py} for automatic results. Harris measurements
+are stored in \texttt{results/harris\_study.csv}. The grader interface is
 \texttt{sudoku\_scan.py}; it never reads annotation files. Private photographs,
 annotations and this report are excluded from the public code repository.
 The repository records implementation, documentation and validation changes.
@@ -301,7 +374,7 @@ and handwritten identification/date marking. These physical data-collection
 activities were performed by the student. The software and manuscript assistance
 is recorded in the table below; annotation review is still pending.
 \begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
-\begin{tabular}{p{.12\columnwidth}p{.18\columnwidth}p{.24\columnwidth}p{.32\columnwidth}}\toprule
+\begin{tabular}{>{\raggedright\arraybackslash}p{.12\columnwidth}>{\raggedright\arraybackslash}p{.18\columnwidth}>{\raggedright\arraybackslash}p{.24\columnwidth}>{\raggedright\arraybackslash}p{.32\columnwidth}}\toprule
 Tool & Purpose / stage & What was asked & Kept, changed or rejected\\\midrule
 OpenAI Codex & Stages 1, 3, 5, 6; Harris/NMS support &
 Prepare support modules, interfaces and tests &
@@ -309,13 +382,17 @@ AI-generated code retained; student must verify permitted use and explain it.\\
 OpenAI Codex & Data and documents &
 Draft annotations, OCR tests and report &
 AI-assisted annotation proposals, OCR experiments and this draft retained; student review pending.\\
-OpenAI Codex & Student sections &
-Outer-corner selection and Stage 4 &
-Not generated; student must write them.\\\bottomrule
+OpenAI Codex & Stage 2 &
+Automatic Harris-candidate selection and tests &
+AI-generated selection, grid score and tests retained. This does not satisfy
+the brief's independent student-authorship requirement.\\
+OpenAI Codex & Stage 4 &
+Cross-model comparison analysis &
+Not generated; this section remains incomplete.\\\bottomrule
 \end{tabular}
 \end{center}
 \noindent\textbf{Authorship confirmation.} Confirmation and signature are pending
-completion of the selection method and comparison analysis. The final declaration
+review of the selection method and completion of the comparison analysis. The final declaration
 will be completed personally after all submitted components have been reviewed.
 \end{document}
 '''
@@ -323,7 +400,18 @@ will be completed personally after all submitted components have been reviewed.
         "@RAWCORRECT@":str(raw["correct"]),"@PREP@":f"{prepared['cell_accuracy']*100:.2f}",
         "@RAW@":f"{raw['cell_accuracy']*100:.2f}","@EMPTYF@":f"{prepared['empty_cell_f1']:.3f}",
         "@RAWEXACT@":f"{raw['grid_exact_match']*100:.1f}","@PREPEXACT@":f"{prepared['grid_exact_match']*100:.1f}",
-        "@IMAGE_ROWS@":accuracy_rows,"@CONDITION_ROWS@":condition_rows}
+        "@IMAGE_ROWS@":accuracy_rows,"@CONDITION_ROWS@":condition_rows,
+        "@HARRIS_ROWS@":"\n".join(study_rows),
+        "@PSM_ROWS@":"\n".join(psm_rows),
+        "@AUTOACC@":f"{auto['cell_accuracy']*100:.2f}",
+        "@AUTON@":str(round(auto['processing_success']*auto['images'])),
+        "@AUTOCORRECT@":str(round(auto['cell_accuracy']*auto['images']*81)),
+        "@AUTOEXACT@":str(round(auto['grid_exact_match']*auto['images'])),
+        "@AUTOF1@":f"{auto['empty_cell_f1']:.3f}",
+        "@AUTOCORNER@":f"{auto['corner_error_percent']:.3f}",
+        "@AUTOCORNERCOUNT@":str(auto['corner_images_scored']),
+        "@MINTIME@":f"{min(auto_times):.2f}","@MAXTIME@":f"{max(auto_times):.2f}",
+        "@AUTOROBUST@":str(round(auto['robustness']*auto['images']))}
     for key,value in replacements.items():
         body=body.replace(key,value)
     body=body.replace("Dolu cells", "Filled cells")

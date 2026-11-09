@@ -30,8 +30,10 @@ def main():
         print(f"Public source: {len(archive.namelist())} entries",flush=True)
     private_zip = ROOT.parent / "SudokuScan_Veri_ve_Sonuclar.zip"
     roots = [ROOT / "data/received_20261109", ROOT / "results/annotation_preview",
+             ROOT / "results/automatic_received", ROOT / "results/ocr_study",
              ROOT / "report/private", ROOT / "output/private"]
-    extras = [ROOT / "docs/GUNCEL_DURUM.md", ROOT / "results/received_dataset_check.json"]
+    extras = [ROOT / "docs/GUNCEL_DURUM.md", ROOT / "results/received_dataset_check.json",
+              ROOT / "results/automatic_received_metrics.json", ROOT / "results/harris_study.csv"]
     files = [path for folder in roots if folder.exists() for path in folder.rglob("*") if path.is_file()]
     files += [path for path in extras if path.is_file()]
     with zipfile.ZipFile(private_zip,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=3) as archive:
