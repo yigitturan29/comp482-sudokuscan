@@ -1,0 +1,170 @@
+% WORKING TEMPLATE ONLY. Replace every DRAFT / STUDENT field before submission.
+% Compile with the official IEEEtran class (e.g. Overleaf IEEE Conference template).
+% Stage 2 selection logic and Stage 4 analysis must be written by the student.
+\documentclass[conference]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{url}
+\newcommand{\draftnote}[1]{\par\noindent\textcolor{red}{\textbf{DRAFT - STUDENT:} #1}\par}
+
+\title{SudokuScan: Photograph-to-Grid Recognition}
+\author{\IEEEauthorblockN{STUDENT NAME}
+\IEEEauthorblockA{Department of Computer Engineering, MEF University\\
+COMP 482, Fall 2026\\Student number: STUDENT NUMBER}}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\draftnote{Write the problem, your own outer-corner method, dataset size, and
+measured results after completing the experiments. The supplied synthetic smoke
+test is not evidence of personal-dataset or hidden-test performance.}
+\end{abstract}
+
+\section{Introduction}
+\draftnote{Describe the photographed printed-grid problem, its geometric and
+recognition challenges, your contribution, and your measured results.}
+
+\section{Corner Detection}
+\subsection{Preprocessing and Harris Candidates}
+The support implementation resizes large images before detection, compensates
+for a smooth illumination field, and evaluates \texttt{cv2.cornerHarris}.
+Relative response thresholding and non-maximum suppression produce discrete candidates.
+\draftnote{Describe the preprocessing you actually retained. State the working
+resolution, size-dependent kernels, actual blockSize, ksize, k, threshold, and NMS radius.}
+
+\subsection{Student-Written Outer-Corner Selection}
+\draftnote{Write this section yourself. Explain your own automatic rule, why it
+rejects clutter and page boundaries, how it orders TL/TR/BR/BL, and when it fails.
+The supplied selection function is deliberately unfinished.}
+
+\subsection{Parameter Study}
+\draftnote{Use at least six personal images. Insert candidate counts and corner
+errors while varying blockSize, ksize, k and response threshold. Explain the values
+you chose using your own measurements. Do not replace failed detections with GT.}
+
+\section{Rectification}
+An affine map has six parameters,
+\begin{equation}
+\begin{bmatrix}u\\v\end{bmatrix}=A
+\begin{bmatrix}x\\y\\1\end{bmatrix},\quad A\in\mathbb{R}^{2\times3}.
+\end{equation}
+Three non-collinear point pairs supply six scalar equations. A3 uses TL, TR and BL.
+A4 fits all four corners by least squares. A projective map has the form
+\begin{equation}
+\lambda\begin{bmatrix}u\\v\\1\end{bmatrix}=H
+\begin{bmatrix}x\\y\\1\end{bmatrix},\quad H\in\mathbb{R}^{3\times3}.
+\end{equation}
+Its common scale is unobservable, leaving eight degrees of freedom; four pairs
+in general position determine it. The implementation uses the continuous target
+boundary $(0,0),(450,0),(450,450),(0,450)$ and a $450\times450$ raster.
+\begin{equation}
+e_{A3}=\|A_3p_{BR}-(450,450)^T\|_2,
+\quad e_{A4}=\sqrt{\frac14\sum_{i=1}^{4}\|A_4p_i-q_i\|_2^2}.
+\end{equation}
+\draftnote{Verify these statements against your final code, add your residual
+measurements and H4 numerical check, and explain parallelism/vanishing points.
+Document the explicit four-point LS refit following estimateAffine2D.}
+
+\section{Affine Versus Homography}
+\draftnote{STUDENT-WRITTEN STAGE 4. AI must not supply this analysis. Complete
+your own measurements on at least eight personal photographs: define obliqueness;
+measure A3 fourth-corner/A4 RMS residual; locate all ten lines per direction;
+measure line-position, spacing and straightness errors; run identical OCR on
+A3/A4/H4; plot the results and interpret the evidence. Explain your conclusion
+using the course's weak-perspective model. Include the three rectifications of
+your most oblique actual photograph side by side. No conclusions are pre-filled.}
+
+\section{Recognition}
+\draftnote{Describe your final margin and empty/filled criterion and justify them
+on real photographs. The current implementation uses an 8\% cell margin, connected-component
+area/height thresholds, edge-remnant rejection, grayscale-preserving digit
+isolation, centering and white padding. Treat defaults as hypotheses, not validated results.}
+Grayscale closing estimates the full-grid illumination field before cell thresholding.
+The OCR support uses Tesseract through pytesseract. Each filled cell is a separate
+page in a multi-page TIFF. The default segmentation mode is PSM 10 and the
+character whitelist is 1--9. Empty cells are excluded before OCR. An unread filled
+cell receives one twofold retry; raw and prepared experiment arms use the same rule.
+\draftnote{Report raw/prepared accuracy, PSM 7/8/10/13 measurements, empty-cell F1,
+and common confusions with actual crops. Record engine version and runtime.}
+
+\section{Results}
+\draftnote{Fill both development and personal-set results, and C1--C5 breakdowns.
+Account for every image, including failures. State the denominator for corner
+error when corners are missing. Report empty-positive and filled-positive F1 if needed.}
+\begin{table}[ht]
+\centering
+\caption{Actual evaluation results (not yet measured).}
+\begin{tabular}{lcc}
+\toprule
+Metric & Development & Personal\\
+\midrule
+Corner error (\% side) & -- & --\\
+Cell accuracy & -- & --\\
+Empty-cell F1 & -- & --\\
+Grid exact match & -- & --\\
+Robustness / 20 s & -- & --\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Failure Analysis}
+\draftnote{Include at least four real failure cases with image IDs, condition,
+debug crop, numerical error, and a diagnosis of the failing stage. Do not invent
+failures or present synthetic tests as phone photographs.}
+
+\section{Conclusion and Limitations}
+\draftnote{Write after completing your experiments. Summarize your own findings,
+real limitations and remaining work. Check the six-page main-report limit.}
+
+\begin{thebibliography}{4}
+\bibitem{opencvfeatures} OpenCV, ``Feature Detection.'' [Online]. Available:
+\url{https://docs.opencv.org/4.x/dd/d1a/group__imgproc__feature.html}
+\bibitem{opencvwarp} OpenCV, ``Geometric Image Transformations.'' [Online]. Available:
+\url{https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html}
+\bibitem{opencvcalib} OpenCV, ``Camera Calibration and 3D Reconstruction.'' [Online]. Available:
+\url{https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html}
+\bibitem{tesseract} Tesseract, ``Command Line Usage.'' [Online]. Available:
+\url{https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html}
+\end{thebibliography}
+
+\appendices
+\section{Dataset and Additional Measurements}
+\draftnote{List the original image IDs, puzzle/source IDs, C1--C5 conditions,
+capture dates and any additional measurements. Keep phone files unedited with EXIF.}
+
+\section{Reproducibility}
+\draftnote{Record final CPU hardware, operating system, dependency versions,
+commands, runtime distribution and code commit. Include additional experiment
+settings if needed; do not invent a development history.}
+
+\section{AI-Use Disclosure}
+\draftnote{This must be the last appendix. Verify and expand the table using
+docs/AI\_KULLANIM\_BEYANI.md. Clarify the permitted scope of AI-generated implementation
+code with the instructor. Never write `None' for this package.}
+\begin{table*}[ht]
+\centering
+\small
+\begin{tabular}{p{0.10\textwidth}p{0.20\textwidth}p{0.28\textwidth}p{0.30\textwidth}}
+\toprule
+Tool & Purpose / stage & What was requested & What was kept, changed or rejected\\
+\midrule
+OpenAI Codex & Starter implementation and tools & Preprocessing, Harris/NMS support,
+transforms, OCR, validity, interfaces, tests and documentation & AI-generated starter;
+student must record actual use and modifications and verify permitted scope.\\
+OpenAI Codex & Excluded sections & Outer-corner selection and Stage 4 analysis &
+Not generated. Student must complete these sections independently.\\
+\bottomrule
+\end{tabular}
+\end{table*}
+\draftnote{After it is true, personally complete the confirmation in Appendix C
+of the assignment: authorship of corner-selection logic and comparison analysis,
+and ability to explain and modify every part. No confirmation or signature is
+provided by this template.}
+Name: \underline{\hspace{25mm}}\quad Student no.: \underline{\hspace{20mm}}\\
+Signature: \underline{\hspace{22mm}}\quad Date: \underline{\hspace{20mm}}
+\end{document}
