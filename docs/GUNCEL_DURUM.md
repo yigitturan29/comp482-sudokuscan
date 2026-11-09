@@ -1,56 +1,35 @@
-# Geliştirme durumu
+# Güncel durum
 
-## Uygulanan modüller
+Bütün hesaplama aşamaları uygulanmıştır: Harris aday seçimi, A3/A4/H4, OCR,
+Sudoku geçerliliği ve on fotoğraflık Stage 4 karşılaştırması. 28 test geçmektedir.
 
-Ön işleme, Harris adayları, A3/A4/H4 dönüşümleri, hücre çıkarma, dolu/boş
-kararı, Tesseract OCR, givens doğrulaması ve istenen çıktı arayüzü mevcuttur.
-Otomatik dış köşe seçimi uygulanmıştır. Stage 4 analizi henüz tamamlanmamıştır.
+## Sağlanan JPEG verisi
 
-## Veri ve deney
+sudoku5.zip içindeki 10 JPEG sırasıyla photo_01..10 olarak, baytları
+korunarak data/received_20261109_zip/images dizinine alınmıştır. JPEG'ler önceki
+PNG kopyalarıyla piksel düzeyinde aynıdır. Metadata ve SHA-256 kayıtları manifesttedir.
+EXIF alanı sayısı her dosyada sıfırdır. Annotation'lar aynı görüntülerden aktarılmış
+referans taslaklarıdır; öğrenci incelemesi beklemektedir.
 
-Üç baskı belgesi ve 10 fotoğraf proje sahibi tarafından hazırlanmıştır.
-Görüntüler SHA-256 ile kontrol edilerek değiştirilmeden çalışma dizinine alınmıştır.
-Köşe/grid annotation'ları taslak durumundadır ve inceleme beklemektedir.
+## Ölçümler
 
-Manuel H4 köşeleriyle 802/810 hücre (%99,01) doğru okunmuştur; ham kolda
-741/810 (%91,48) elde edilmiştir. Hazırlanmış grid exact match 6/10,
-boş/dolu F1 1,00'dır. Bu, aynı görüntülerle geliştirilen OCR aşamasının
-ölçümüdür; otomatik sistem veya bağımsız test sonucu değildir.
-21 test geçmektedir. IEEEtran raporu veri toplama katkısını, yöntemi,
-ölçümleri, dört hata örneğini, sınırlamaları ve Ek C beyanını içerir.
+10/10 otomatik işlem, 801/810 doğru hücre (%98,89), 6/10 exact grid,
+boş/dolu F1 1,00, ortalama köşe hatası %0,658. Bütün görüntüler bu CPU
+koşusunda 20 saniye altında tamamlandı. Dokuz dolu hücre okunamadı.
 
-## Kalan işler
+Stage 4: A3 %69,63, A4 %73,09, H4 %98,89. Çizgi konum hataları sırasıyla
+21,35 / 14,32 / 1,94 px; aralık hataları 5,78 / 4,49 / 1,06 px. A3'te
+13/200 çizgi ölçülemedi; A4/H4'te 200/200 ölçüldü. En eğik proxy photo_02'dir.
+Karşılaştırma grafikleri, yirmi çizginin durumları, çizgi noktaları, bindirmeler
+ve gerçek OCR gridleri results/model_comparison içindedir.
 
-1. En az sekiz görüntüde Stage 4 çizgi ölçümleri, grafikler ve analizi tamamlamak.
-2. Annotation taslaklarını gözden geçirmek ve tüm otomatik metrikleri yeniden ölçmek.
-3. Telefon orijinallerini EXIF korunarak veri teslimine eklemek.
-4. LMS geliştirme kümesini ayrı değerlendirmek; nihai rapor ve beyanı sonlandırmak.
+7 görüntü x 12 Harris ayarı = 84 deney ve 10 görüntü x 4 PSM x 2 hazırlama
+kolu = 80 OCR deneyi tamamdır. Veriler geliştirmede de kullanıldığından
+bağımsız/hidden test başarısı iddiası yapılmaz.
 
-02-04 numaralı görüntülerde dik bulmaca yönü annotation sırasıyla tanımlanmıştır;
-bu manuel önizleme ayrı bir deneydir. Otomatik program yönü OCR güveniyle seçer. Gelen PNG'lerde EXIF
-bulunmamaktadır. Üç özgün çevrimiçi kaynak, veri kaydında henüz yer almamaktadır.
+## Teslim kontrolünde kalan konular
 
-## Otomatik seçim
-
-`student_corner_selection.py` son dört koordinatı Harris adaylarından seçer.
-Kontur köşeleri yalnızca bölge araması içindir. Izgara puanı ve aday indeksleri
-JSON çıktısına yazılır. Dört yönün OCR güveni değerlendirilir; yeterince güvenli
-bir okuma bulunduğunda diğer yönler denenmez. Yöntem ve sınırlamalar
-`KOSE_SECIMI.md` dosyasında açıklanmıştır.
-
-## Otomatik geliştirme kümesi ölçümü
-
-10/10 fotoğraf annotation okumadan işlendi. Hücre doğruluğu 801/810 (%98,89),
-exact grid 6/10, boş/dolu F1 1,00; ortalama köşe hatası %0,658. Süre aralığı
-5.69-15.79 saniyedir. Bu aynı geliştirme görüntülerindeki sonuçtur.
-
-Yedi dik görüntüde 12 ortak Harris ayarı (84 deney) ölçüldü; ham kayıt
-`results/harris_study.csv` içindedir. Kayıp tespitler ortalama hatadan ayrı sayılmıştır.
-
-## OCR ayar çalışması
-
-Otomatik H4 çıktılarında PSM 7/8/10/13 ve ham/hazırlanmış hücreler için 80 deney
-tamamlandı. Hazırlanmış hücre doğruluğu PSM 7 ve 10 için %98,89; PSM 8 ve 13
-için %70,00. Ham hücre doğrulukları sırasıyla %89,26 / %82,35 / %89,75 / %82,47.
-Tüm sonuçlar `results/ocr_study/measurements.json` içindedir. PSM 10 hazırlanmış
-koldaki dokuz hata 6->0 (6), 9->0 (2), 1->0 (1) biçimindedir.
+Program ve karşılaştırma çalışır. Üç özgün çevrimiçi puzzle kaynağı kaydedilmemiş,
+EXIF yoktur. Öğrenci annotation'ları ve yazarlık/AI beyanını gözden geçirmelidir.
+LMS geliştirme kümesi sağlanmadığı için onun ayrı değerlendirmesi yapılmamıştır.
+Yazılım çalışması bu veri ve ders değerlendirmesi koşullarını otomatik sağlamaz.

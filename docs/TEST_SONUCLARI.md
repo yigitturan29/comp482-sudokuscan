@@ -1,6 +1,6 @@
 # Doğrulama kaydı - 7 Kasım 2026
 
-Güncelleme (9 Kasım): gerçek fotoğraflarla yapılan manuel ve otomatik testler ile 21 geçen
+Güncelleme (9 Kasım): gerçek fotoğraflarla yapılan manuel ve otomatik testler ile 28 geçen
 modül testi için `GUNCEL_DURUM.md` dosyasını oku. Aşağıdaki kayıt ilk sentetik
 demoya aittir; önceki çalıştırmanın gerçek kaydı olarak korunmuştur.
 

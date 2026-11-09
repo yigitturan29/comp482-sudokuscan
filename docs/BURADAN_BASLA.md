@@ -6,8 +6,8 @@ tamamlaması değil, gerçekten fotoğraftan okuması gerekiyor.
 
 **Hazır olan:** görüntü hazırlama, Harris adayları, A3/A4/H4 dönüşümleri, hücre
 ayırma, Tesseract OCR, çakışma kontrolü, çıktı biçimi, otomatik dış köşe seçimi ve testler.
-**Kalan işler:** Stage 4 ölçüm/analizi, annotation incelemesi, telefon orijinalleri,
-nihai rapor kontrolü. Güncel durum `GUNCEL_DURUM.md` içindedir.
+**Tamamlanan:** on JPEG üzerinde Stage 4 ölçümü, grafikler ve rapor.
+**Kalan kontrol:** annotation incelemesi, kaynak/metadata ve nihai beyan. Güncel durum `GUNCEL_DURUM.md` içindedir.
 
 ## İlk çalışma oturumu
 
@@ -85,6 +85,7 @@ kaydetme. `evaluate.py` tahmin ile ground truth'u karşılaştırır. Tam başar
 fotoğraf boş hücrelerin çokluğu sayesinde yüksek başarı almasın diye sıfır hücre
 başarısı alır. Bulunamayan köşeler için ayrı eksik sayısı tutulur.
 
-Stage 4 için en az 8 fotoğraf gerekir. Hangi fotoğrafları neden seçtiğini, eğikliği
-nasıl sayısallaştırdığını, çizgi hatasını nasıl ölçtüğünü ve sonuçlarını kendin yaz.
-Raporun o bölümü bu pakette senin çalışma alanın olarak bırakıldı.
+Stage 4 ölçümü on fotoğrafta tamamlandı. Yöntem ve sonuçlar
+`MODEL_KARSILASTIRMASI.md` dosyasındadır. `deneyler.ps1` bütün deneyleri,
+`calistir.cmd` sıradan fotoğraf taramasını başlatır. Sonuçları açıklayabilmek
+için örnekleri ve ölçüm yöntemini gözden geçir.

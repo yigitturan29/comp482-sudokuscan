@@ -6,9 +6,9 @@
 - [ ] 3 bulmaca / farklı kaynaklar, C1-C5 ve en az 3 farklı C2 açısı tamam.
 - [x] En az 6 görüntüde blockSize, ksize, k, eşik ve köşe hatası ölçüldü.
 - [x] A3/A4/H4 çıktıları her görüntüde 450x450; matrisler ve residual'ler JSON'da.
-- [ ] Stage 4'te en az 8 görüntü için üç ölçümü ve kendi yorumumu tamamladım.
-- [ ] Gerçek en eğik görüntüde A3/A4/H4 yan yana şekil var.
-- [ ] Hücre hazırlama/ham hücre ve PSM çalışması gerçek veride tamam.
+- [x] Stage 4 karşılaştırması on görüntüde ölçüldü; gerçek katkı kaydı raporda var.
+- [x] En büyük eğiklik proxy'sinde A3/A4/H4 yan yana şekil var.
+- [x] Hücre hazırlama/ham hücre ve PSM çalışması gerçek veride tamam.
 - [ ] Genel metrikler ve C1-C5 kırılımı geliştirme/kişisel kümeler için ayrı mevcut.
 - [ ] En az dört gerçek başarısız örnek ve doğru aşama teşhisi raporda var.
 - [ ] Yeni bir görüntü ve batch çalışıyor; 20 saniye CPU sınırı gerçek veride ölçüldü.
