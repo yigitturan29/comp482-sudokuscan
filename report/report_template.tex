@@ -37,10 +37,10 @@ Relative response thresholding and non-maximum suppression produce discrete cand
 \draftnote{Describe the preprocessing you actually retained. State the working
 resolution, size-dependent kernels, actual blockSize, ksize, k, threshold, and NMS radius.}
 
-\subsection{Student-Written Outer-Corner Selection}
+\subsection{Outer-Corner Selection}
 \draftnote{Explain the automatic rule, why it
 rejects clutter and page boundaries, how it orders TL/TR/BR/BL, and when it fails.
-The selection function is currently unimplemented.}
+The current selection function uses contour region proposals, Harris candidate indices and a 10-by-10 line score. Verify the method and record its actual authorship.}
 
 \subsection{Parameter Study}
 \draftnote{Use at least six personal images. Insert candidate counts and corner
@@ -155,8 +155,10 @@ Tool & Purpose / stage & What was requested & What was kept, changed or rejected
 OpenAI Codex & Starter implementation and tools & Preprocessing, Harris/NMS support,
 transforms, OCR, validity, interfaces, tests and documentation & AI-generated starter;
 student must record actual use and modifications and verify permitted scope.\\
-OpenAI Codex & Excluded sections & Outer-corner selection and Stage 4 analysis &
-Not generated. Student must complete these sections independently.\\
+OpenAI Codex & Stage 2 & Outer-corner selection and tests &
+AI-generated implementation retained; this does not meet the independent-authorship condition in the brief.\\
+OpenAI Codex & Stage 4 & Cross-model comparison analysis &
+Not generated; the analysis remains incomplete.\\
 \bottomrule
 \end{tabular}
 \end{table*}
